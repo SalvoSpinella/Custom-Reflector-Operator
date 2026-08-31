@@ -8,7 +8,7 @@ An automated, native Kubernetes Go Operator built with `sigs.k8s.io/controller-r
 
 ---
 
-## 💡 Overview & Problem Statement
+## Overview & Problem Statement
 
 Native multi-cluster reflection tools like **Liqo (v0.10.0+)** are designed for *Pod Offloading* and natively reflect core Kubernetes primitives (`Pod`, `Service`, `ConfigMap`, `Secret`). However, they do **not** reflect non-core **Custom Resource Definitions (CRDs)** (such as S4T IoT devices or Crossplane Custom Resources).
 
@@ -20,7 +20,7 @@ The **Custom Reflector Operator** solves this architectural gap by providing a *
 
 ---
 
-## 🏗️ Closed-Loop Architecture
+## Closed-Loop Architecture
 
 ```
 +-----------------------------------------------------------------------------------+
@@ -64,7 +64,7 @@ The **Custom Reflector Operator** solves this architectural gap by providing a *
 
 ---
 
-## 🚀 Quick Start & Deployment
+## Quick Start & Deployment
 
 ### Prerequisites
 - Kubernetes cluster (v1.26+)
@@ -89,14 +89,6 @@ kubectl apply -f deploy/deployment.yaml
 
 ---
 
-## 🔒 Security & Privacy
-
-- **No Hardcoded Credentials**: Remote cluster authentication payloads are securely mounted via Kubernetes Secrets (`foreign-kubeconfig-secret`).
-- **RBAC Minimal Privileges**: Strict `ClusterRole` scoping limits access exclusively to target CRD Group (`iot.slices.eu`) and namespace discovery.
-- **Distroless & Non-Root Execution**: Container runs on `gcr.io/distroless/static:nonroot` with UID `65532` and zero CGO dependencies.
-- **Safe Logging**: No sensitive authentication tokens or private keys are ever printed to logs.
-
----
 
 ## 📄 License
 
