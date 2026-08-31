@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: custom-reflector-sa
+  namespace: liqo-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: custom-reflector-role
+rules:
+- apiGroups: ["iot.slices.eu"]
+  resources: ["s4tdevices", "s4tdevices/status"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: custom-reflector-binding
+subjects:
+- kind: ServiceAccount
+  name: custom-reflector-sa
+  namespace: liqo-system
+roleRef:
+  kind: ClusterRole
+  name: custom-reflector-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: custom-reflector-operator
+  namespace: liqo-system
+  labels:
+    app.kubernetes.io/name: custom-reflector-operator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: custom-reflector-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: custom-reflector-operator
+    spec:
+      serviceAccountName: custom-reflector-sa
+      containers:
+      - name: manager
+        image: docker.io/library/custom-reflector-operator:latest
+        imagePullPolicy: IfNotPresent
+        args:
+        - "--foreign-kubeconfig=/etc/foreign-kubeconfig/edge1.yaml"
+        volumeMounts:
+        - name: foreign-kubeconfig-vol
+          mountPath: /etc/foreign-kubeconfig
+        resources:
+          limits:
+            cpu: 200m
+            memory: 256Mi
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8083
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8083
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      volumes:
+      - name: foreign-kubeconfig-vol
+        secret:
+          secretName: foreign-kubeconfig-secret
